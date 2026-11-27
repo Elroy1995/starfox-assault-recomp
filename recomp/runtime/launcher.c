@@ -966,6 +966,11 @@ static void draw_pads(SDL_Renderer *r, float fade) {
 int launcher_run(const char *found_disc, int *fullscreen_io, char *disc_out, size_t disc_n) {
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
     SDL_SetHint("SDL_JOYSTICK_HIDAPI_STEAMDECK", "1"); /* the Deck's own controls, also when not started from Steam */
+    /* Windows: Xbox/XInput pads reach SDL as raw input messages to a hidden window on the thread that
+     * initialises the joystick subsystem. That is this (the main) thread, which runs the game after the
+     * start screen and never reads messages again, so those pads went dead in the game. With this hint
+     * SDL owns that window on a thread of its own. SDL stays initialised into the game, so it's set here. */
+    SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) != 0) return -1;
     load_settings();
     if (*fullscreen_io) g_fullscreen = 1;

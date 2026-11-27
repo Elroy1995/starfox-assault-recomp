@@ -1479,6 +1479,10 @@ void video_start(int dump_frames) {
     g_prof_render = getenv("SFA_PROFILE") != NULL;
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
     SDL_SetHint("SDL_JOYSTICK_HIDAPI_STEAMDECK", "1"); /* the Deck's own controls, also when not started from Steam */
+    /* SDL is initialised here (or by the start screen) on the main thread, but events are pumped on the
+     * render thread. On Windows, Xbox/XInput pads arrive as raw input messages to a window on the thread
+     * that initialised the joysticks, so without SDL's own joystick thread they never arrive (see launcher.c). */
+    SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) != 0) rt_fatal("SDL_Init: %s", SDL_GetError());
     g_audio_muted = getenv("SFA_MUTE") != NULL;
     if (g_audio_muted) printf("[audio] muted (SFA_MUTE)\n");
